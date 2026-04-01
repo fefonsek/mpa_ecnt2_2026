@@ -1,0 +1,454 @@
+---
+title: "Resolução da Lista de Exercícios 1"
+subtitle: "Econometria II"
+author: "Felipe Fonseca"
+lang: pt-BR
+date: today
+format:
+  html:
+    theme: flatly
+    embed-resources: true
+    toc: true
+execute: 
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r}
+library(zoo)
+library(xts)
+library(tsibble)
+library(BETS)
+library(dplyr)
+library(ggplot2)
+```
+
+## Exercício 1
+
+```{r}
+# Valores de lucro por ação (vetor)
+lucro_acao <- c(2.1, 2.4, 2.3, 2.7, 2.9, 3.0, 3.2, 3.1)
+
+# Criando a série temporal trimestral (classe ts)
+lucro_ts <- ts(
+  data     = lucro_acao,
+  start    = c(2023, 1),  # 1º trimestre de 2023
+  frequency = 4          # trimestral: 4 observações por ano
+)
+
+# Exibindo o objeto
+lucro_ts
+
+# Frequência da série
+frequency(lucro_ts)
+
+# Período inicial
+start(lucro_ts)
+
+# Período final
+end(lucro_ts)
+
+plot(lucro_ts,
+     main   = "Lucro por ação – série temporal trimestral",
+     xlab   = "Periodo",
+     ylab   = "Lucro por ação",
+     type   = "o",         # linhas + pontos
+     col    = "green",
+     lwd    = 2)
+```
+
+## Exercício 2
+
+```{r}
+# Carregar pacote zoo
+library(zoo)
+
+# Vetor de datas (strings)
+datas <- c("2024-01-02", "2024-01-05", "2024-01-08", "2024-01-10")
+
+# Transformar em objetos Date
+datas_date <- as.Date(datas)
+
+# Vetor de valores
+valores <- c(100, 101, 99, 103)
+
+# Criar objeto zoo
+serie_zoo <- zoo(x = valores, order.by = datas_date)
+
+# Exibir o objeto
+serie_zoo
+
+# Verificar a classe do objeto
+class(serie_zoo)
+
+# Gráfico simples da série zoo
+plot(serie_zoo,
+     main = "Série temporal (zoo) – valores por data",
+     xlab = "Periodo",
+     ylab = "Valor",
+     type = "o",
+     col  = "green",
+     lwd  = 2)
+
+
+```
+Esse conjunto de dados é adequado para a classe zoo porque possui datas como índice temporal e valores associados a cada data, sem necessidade de frequência fixa. A classe zoo lida bem com séries irregulares no tempo, exatamente como nesse caso, em que as observações não são igualmente espaçadas ao longo do calendário.
+
+## Exercício 3
+
+```{r}
+# Criar objeto xts
+serie_xts <- xts(x = valores, order.by = datas_date)
+
+# Exibir o objeto criado
+serie_xts
+
+# Três primeiras observações
+head(serie_xts, n = 3)
+
+# Duas últimas observações
+tail(serie_xts, n = 2)
+
+```
+
+A classe zoo e a classe xts são ambas usadas para séries temporais com índice de tempo irregular, como datas específicas. Uma semelhança é que xts herda funcionalidades de zoo e também permite associação de valores a datas arbitrárias, sem necessidade de frequência fixa. Uma diferença importante é que xts é projetado como uma matriz extensível com indizador de tempo, o que a torna especialmente adequada para manipulação de grandes volumes de dados financeiros e operações vetorizadas, enquanto zoo é mais “abstrata” e simples, focada em flexibilidade na estrutura do índice temporal. 
+
+## Exercício 4
+
+```{r}
+# Datas: sequência mensal de jan–jun/2025
+data <- seq.Date(as.Date("2025-01-01"),
+                 as.Date("2025-06-01"),
+                 by = "1 month")
+
+# Valores de vendas
+vendas <- c(120, 135, 128, 140, 150, 160)
+
+# Criar tibble inicial
+df <- tibble(data = data, vendas = vendas)
+
+# Converter para tsibble, definindo o índice temporal
+serie_tsibble <- df %>%
+  as_tsibble(index = data)
+
+# Exibir o objeto criado
+serie_tsibble
+
+# Identificar a coluna de índice temporal
+index_var(serie_tsibble)
+
+# Gráfico da série tsibble
+plot(serie_tsibble,
+         main = "Vendas mensais – série temporal (tsibble)",
+         xlab = "Data",
+         ylab = "Vendas",
+         col = "green",
+         type= "o",
+         lwd = 2)
+```
+
+A classe tsibble é conveniente em um workflow do tidyverse porque mantém os dados em formato de tibble com um índice temporal explícito, permitindo o uso direto de dplyr, ggplot2 e funções de séries temporais (index_by(), agregação, etc.) de forma coerente e legível.
+
+Além disso, tsibble suporta dados temporais tidos, com facilidade para lidar com frequência (diária, mensal, trimestral) e preencher/ajustar lacunas de tempo, o que facilita análise e previsão integrada ao ecossistema tidyverts (fable, feasts, etc.).
+
+## Exercício 5
+
+```{r}
+# Valores de janeiro a dezembro de 2024
+valores <- c(10, 11, 13, 12, 14, 15, 16, 15, 17, 18, 19, 20)
+
+# Datas: sequência mensal de jan–dez/2024
+datas <- seq.Date(as.Date("2024-01-01"),
+                  as.Date("2024-12-01"),
+                  by = "1 month")
+
+# Série temporal regular mensal (ts)
+serie_ts <- ts(data = valores,
+               start = c(2024, 1),
+               frequency = 12)
+
+# Exibir
+serie_ts
+
+# Criar objeto zoo
+serie_zoo <- zoo(x = valores, order.by = datas)
+
+# Exibir
+serie_zoo
+
+# Crir objeto xts
+serie_xts <- xts(x = coredata(serie_zoo), order.by = datas)
+
+# Exibir
+serie_xts
+
+# Criar tibble com datas e valores
+df <- tibble(data = datas, valores = valores)
+
+# Converter para tsibble
+serie_tsibble <- df %>%
+  as_tsibble(index = data)
+
+# Exibir
+serie_tsibble
+
+```
+
+## Exercício 6
+
+```{r}
+
+# Buscar séries relacionadas à inflação (IPCA)
+busca <- BETSsearch("IPCA")
+
+# Visualizar resultados encontrados
+head(busca)
+
+# Importa série IPCA
+ipca <- BETSget(433)
+head(ipca)
+class(ipca)
+
+# Coverter para tsibble
+ipca_tsibble <- as_tsibble(ipca)
+
+# Visualizar
+ipca_tsibble
+
+# Gráfico da série tsibble
+plot(ipca_tsibble,
+         main = "IPCA - Índice de Inflação Brasileira",
+         xlab = "Tempo",
+         ylab = "Índice",
+         col = "green",
+         type= "l",
+         lwd = 2)
+```
+
+### Descrição da Série
+
+A série selecionada corresponde ao Índice Nacional de Preços ao Consumidor Amplo (IPCA), calculado pelo IBGE e amplamente utilizado como medida oficial de inflação no Brasil. 
+
+O IPCA mensura a variação média dos preços de uma cesta de bens e serviços consumidos pelas famílias brasileiras, sendo utilizado como referência para o regime de metas de inflação do Banco Central do Brasil.
+
+A unidade de medida corresponde a um índice de preços (base = 100 em período de referência definido pelo IBGE). A frequência temporal dos dados é mensal, permitindo acompanhar a dinâmica inflacionária ao longo do tempo e analisar tendências de curto e médio prazo na economia brasileira.
+
+
+## Exercício 7
+
+```{r}
+
+# Série original (classe ts)
+class(ipca)
+
+# Converter para zoo
+ipca_zoo <- as.zoo(ipca)
+ipca_zoo
+class(ipca_zoo)
+
+# Converter para xts
+ipca_xts <- as.xts(ipca)
+ipca_xts
+class(ipca_xts)
+
+# Converter para tsibble
+ipca_tsibble <- as_tsibble(ipca)
+ipca_tsibble
+class(ipca_tsibble)
+
+```
+
+### Comparação entre classes
+####  Indexação do tempo
+
+Na classe zoo, o tempo é indexado de forma flexível, podendo assumir diferentes formatos, como Date ou POSIXct.
+
+Na classe xts, o índice temporal também é baseado em datas, porém com uma estrutura mais rígida e eficiente para operações com séries financeiras.
+
+Já na classe tsibble, o tempo é explicitamente definido como uma variável (coluna), chamada de índice, o que facilita a integração com o ecossistema tidyverse.
+
+####  Tipo de dados (regularidade)
+
+A classe zoo permite trabalhar com séries regulares e irregulares, sendo bastante versátil.
+
+A classe xts também suporta ambos os casos, mas é mais utilizada em séries financeiras com frequência regular.
+
+A classe tsibble é mais adequada para dados regulares ou organizados, exigindo uma estrutura temporal bem definida.
+
+####  Integração com outras ferramentas
+
+A classe zoo possui boa compatibilidade com diversos pacotes do R.
+
+A classe xts apresenta forte integração com pacotes da área financeira, como quantmod e TTR.
+
+Já a classe tsibble se integra diretamente com o tidyverse e com o pacote fable, sendo bastante útil para modelagem e previsão de séries temporais.
+
+#### Aplicações
+
+zoo: indicada para análises gerais de séries temporais, especialmente quando há irregularidade nos dados.
+
+xts: mais apropriada para aplicações financeiras e análise de mercado.
+
+tsibble: ideal para pipelines modernos de análise, especialmente em modelagem estatística e previsão.
+
+#### Conclusão
+
+Entre as classes analisadas, a classe tsibble se mostrou a mais intuitiva neste primeiro contato, principalmente por sua organização em formato de tabela e integração com o tidyverse, o que facilita a manipulação e análise dos dados.
+
+No entanto, as classes zoo e xts continuam sendo extremamente relevantes, especialmente em contextos mais tradicionais ou voltados à análise financeira.
+
+## Exercício 8
+
+```{r}
+set.seed(123)
+
+# Parâmetros iniciais
+n <- 200
+beta0 <- 2
+beta1 <- 0.5
+phi <- 0.9
+sigma <- 1
+```
+
+### A) Simulação, estimação e gráficos
+
+```{r}
+# Gerar X_t
+X <- rnorm(n)
+
+# Gerar erros AR(1)
+u <- numeric(n)
+epsilon <- rnorm(n,0,sigma)
+
+for (t in 2:n){
+  u[t] <- phi * u[t-1] + epsilon[t]
+}
+
+# Gerar Y_t
+Y <- beta0 + beta1 * X + u
+
+# Estimar MQO
+modelo <- lm(Y ~ X)
+
+summary(modelo)
+
+# Gráfico
+plot(u, type = "l",
+     main = "Série dos erros u_t",
+     xlab = "Tempo",
+     ylab = "u_t",
+     col = "green",
+     lwd = 2
+     )
+
+# Função de autocorrelação
+acf(u, main = "Função de Autocorrelação de u_t")
+
+```
+
+### B) Variação de φ
+
+```{r}
+
+phis <- c(0.2, 0.6)
+
+resultados_phi <- data.frame(
+  phi = numeric(),
+  beta1_est = numeric(),
+  se_beta1 = numeric()
+)
+
+for (p in phis) {
+  set.seed(123)
+  
+  X <- rnorm(n)
+  u <- numeric(n)
+  epsilon <- rnorm(n,0,sigma)
+  
+  for (t in 2:n) {
+    u[t] <- p * u[t-1] + epsilon[t]
+  }
+  
+  Y <- beta0 + beta1 * X + u
+  
+  modelo <- lm (X ~ Y)
+  
+  resultados_phi <- rbind(resultados_phi,
+                          data.frame(
+                            phi = p,
+                            beta1_est = coef(modelo)[2],
+                            se_beta1 = summary(modelo)$coefficients[2,2]
+                         ))
+} 
+
+resultados_phi
+```
+
+Observa-se que, ao aumentar o valor de φ de 0.2 para 0.6, a autocorrelação dos erros u_t tende a se intensificar. Isso ocorre porque φ controla diretamente o grau de dependência temporal no processo autorregressivo AR(1), de modo que valores maiores implicam maior persistência dos choques ao longo do tempo.
+
+Em relação à estimativa de β₁, nota-se que há uma pequena variação entre os valores obtidos (0.360 para φ = 0.2 e 0.297 para φ = 0.6). No entanto, essa diferença não é muito expressiva, indicando que o estimador de MQO permanece aproximadamente não viesado mesmo na presença de autocorrelação dos erros.
+
+Quanto ao erro-padrão estimado de β₁, observa-se uma leve redução (de aproximadamente 0.055 para 0.049). Esse comportamento pode variar conforme a simulação; contudo, na presença de autocorrelação, os erros-padrão estimados pelo MQO tornam-se inconsistentes, podendo comprometer a validade das inferências estatísticas.
+
+De forma geral, conclui-se que o aumento da autocorrelação dos erros não altera significativamente o valor esperado do estimador de β₁, mas afeta sua variância e a confiabilidade dos testes estatísticos associados.
+
+### C) Variação de n
+
+```{r}
+
+# Tamanho de amostra
+ns <- c(50, 100, 200, 500)
+
+# Parâmetros fixos
+beta0 <- 2
+beta1 <- 0.5
+phi <- 0.9
+sigma <- 1
+
+# Data frame para armazenar resultados
+resultados_n <- data.frame(
+  n = numeric(),
+  beta0_est = numeric(),
+  beta1_est = numeric()
+)
+
+for (tam in ns) {
+  set.seed(123)
+  
+  # Gerar X
+  X <- rnorm(tam)
+  
+  # Gerar erro AR(1)
+  u <- numeric(tam)
+  epsilon <- rnorm(tam, 0 ,sigma)
+  
+  for(t in 2:tam){
+    u[t] <- phi * u[t-1] + epsilon[t]
+  }
+  
+  # Gerar Y
+  Y <- beta0 + beta1 * X + u
+  
+  # Estimar modelo
+  modelo <- lm(Y ~ X)
+  
+  # Guardar resultados
+  resultados_n <- rbind(
+    resultados_n,
+    data.frame(
+      n = tam,
+      beta0_est = coef(modelo)[1],
+      beta1_est = coef(modelo)[2]
+    )
+  )
+}
+
+# Visualizar tabela
+resultados_n
+```
+Ao comparar as estimativas com os valores verdadeiros β₀ = 2 e β₁ = 0.5, observa-se que, à medida que o tamanho da amostra aumenta, as estimativas tendem a se aproximar desses valores.
+
+Para amostras menores, as estimativas apresentam maior variabilidade, podendo se afastar dos valores reais. No entanto, conforme o tamanho da amostra cresce, essa variabilidade diminui, tornando as estimativas mais precisas.
+
+Esse resultado evidencia a propriedade de consistência dos estimadores de MQO, mesmo na presença de forte autocorrelação dos erros (φ = 0.9).
