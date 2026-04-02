@@ -74,3 +74,81 @@ Indique qual das séries parece ter sido gerada por um processo AR(1) e qual par
 
 ```
 
+
+# Exercício 2
+
+A série jj, disponível no pacote astsa, registra o lucro por ação (earnings per share) trimestral da empresa Johnson & Johnson.
+
+Utilizando essa série, a metodologia de Box e Jenkins (1970):
+
+## 2.1
+
+Carregue e visualize a série original;
+
+```{r}
+
+```
+
+## 2.2
+
+Avalie se uma transformação simples, como o logaritmo e/ou uma diferença, parece necessária;
+
+```{r}
+
+```
+
+## 2.3
+
+Construa a série que será modelada;
+
+```{r}
+
+```
+
+## 2.4
+
+Analise a FAC e FACP da série escolhida;
+
+```{r}
+
+```
+
+## 2.5
+
+Proponha alguns modelos ARMA(p,q) candidatos e um selecionado pela função auto.arima;
+
+```{r}
+
+```
+
+## 2.6
+
+Estime e compare os modelos usando um critério de informação;
+
+```{r}
+
+```
+
+## 2.7
+
+Faça o diagnóstico dos resíduos do modelo selecionado;
+
+```{r}
+
+```
+
+# 2.8
+
+Gere previsões para alguns períodos à frente;
+
+```{r}
+
+```
+
+## 2.9
+
+Comente se o modelo ARMA parece adequado ou se há indícios de estrutura remanescente que poderá ser tratada melhor com modelos mais gerais.
+
+```{r}
+
+```
