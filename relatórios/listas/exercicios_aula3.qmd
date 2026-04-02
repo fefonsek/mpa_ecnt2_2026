@@ -137,7 +137,7 @@ Faça o diagnóstico dos resíduos do modelo selecionado;
 
 ```
 
-# 2.8
+## 2.8
 
 Gere previsões para alguns períodos à frente;
 
