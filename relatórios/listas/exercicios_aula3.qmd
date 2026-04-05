@@ -36,9 +36,27 @@ Use a função arima.sim() para simulas as duas séries e responda:
 
 ## 1.1
 
-Gere as duas séries simuladas, usando a mesma semesnte;
+Gere as duas séries simuladas, usando a mesma semente;
 
 ```{r}
+
+# Definindo semente para reprodutibilidade
+set.seed(123)
+
+# Processo 1: AR(1) com phi = 0.7
+serie_ar1 <- arima.sim(
+  model = list(ar = 0.7),
+  n = 200
+)
+
+# Processo 2: MA(1) com theta = 0.7
+serie_ma1 <- arima.sim(
+  model = list(ma = 0.7),
+  n = 200
+)
+
+serie_ar1
+serie_ma1
 
 ```
 
@@ -48,6 +66,30 @@ Construa o gráfico de linha de cada série;
 
 ```{r}
 
+dados <- tibble(
+  tempo = 1:200,
+  AR1 =  as.numeric(serie_ar1),
+  MA1 =  as.numeric(serie_ma1)
+)
+
+# Gráfico AR(1)
+ggplot(dados, aes(x = tempo, y = AR1)) +
+  geom_line()+
+  labs(
+    title = "Série Simulada AR(1)",
+    x = "Tempo",
+    y = "Valor"
+  )
+
+# Gráfico MA(1)
+ggplot(dados, aes(x = tempo, y = MA1)) +
+  geom_line() +
+  labs(
+    title = "Série Simulada MA(1)",
+    x = "Tempo",
+    y = "Valor"
+  )
+
 ```
 
 ## 1.3
@@ -56,23 +98,48 @@ Obtenha FAC e a FACP de cada processo;
 
 ```{r}
 
+# FAC e FACP - AR(1)
+acf(serie_ar1, main = "FAC - Processo AR(1)")
+pacf(serie_ar1, main = "FACP - Processo AR(1)")
+
+# FAC e FACP - MA(1)
+acf(serie_ma1, main = "FAC - Processo MA(1)")
+pacf(serie_ma1, main = "FACP - Processo MA(1)")
+
+
 ```
 
 ## 1.4
 
 Compare visualmente os padrões observados nas FACs e FACPs;
 
-```{r}
+Resposta:
 
-```
+- No processo AR(1), a FAC apresenta decaimento gradual (exponencial),
+  enquanto a FACP corta abruptamente após o primeiro lag.
+
+- No processo MA(1), ocorre o contrário:
+  a FAC corta abruptamente após o primeiro lag,
+  enquanto a FACP apresenta decaimento gradual.
+  
 
 ## 1.5
 
 Indique qual das séries parece ter sido gerada por um processo AR(1) e qual parece ter sido gerada por um processo MA(1), justificando com base no comportamento da FAC e da FACP.
 
-```{r}
+Identificação dos processos:
 
-```
+A série com:
+- FAC decaindo lentamente e FACP com corte no lag 1
+  → caracteriza um processo AR(1).
+
+A série com:
+- FAC com corte no lag 1 e FACP decaindo gradualmente
+  → caracteriza um processo MA(1).
+
+Portanto:
+- serie_ar1 foi gerada por um processo AR(1).
+- serie_ma1 foi gerada por um processo MA(1).
 
 
 # Exercício 2
