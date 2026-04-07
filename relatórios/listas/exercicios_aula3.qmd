@@ -23,6 +23,9 @@ library(tidyverse)
 library(here)
 library(readxl)
 library(forecast)
+library(astsa)
+library(tseries)
+library(ggplot2)
 
 ```
 
@@ -154,6 +157,15 @@ Carregue e visualize a série original;
 
 ```{r}
 
+data(jj)
+
+jj
+plot(jj,
+     main = "Série Original - Johnson & Johnson",
+     ylab = "Earnings per Share",
+     xlab = "Tempo")
+
+
 ```
 
 ## 2.2
@@ -161,6 +173,17 @@ Carregue e visualize a série original;
 Avalie se uma transformação simples, como o logaritmo e/ou uma diferença, parece necessária;
 
 ```{r}
+
+plot(log(jj),
+     main = "Logaritmo da Série",
+     ylab = "log(EPS)")
+
+diff_log_jj <- diff(log(jj))
+
+plot(diff_log_jj,
+     main = "Primeira Diferença do Log",
+     ylab = "Diferença Log")
+
 
 ```
 
@@ -170,6 +193,13 @@ Construa a série que será modelada;
 
 ```{r}
 
+serie_modelo <- diff_log_jj
+
+plot(serie_modelo,
+     main = "Série Transformada",
+     ylab = "diff(log(jj))")
+
+
 ```
 
 ## 2.4
@@ -178,13 +208,45 @@ Analise a FAC e FACP da série escolhida;
 
 ```{r}
 
+par(mfrow=c(1,2))
+
+acf(serie_modelo,
+    main="FAC")
+
+pacf(serie_modelo,
+     main="FACP")
+
+par(mfrow=c(1,1))
+
 ```
+
+FAC decai gradualmente
+FACP apresenta poucos lags significativos
+
+Indícios de modelos ARMA de baixa ordem.
+
 
 ## 2.5
 
 Proponha alguns modelos ARMA(p,q) candidatos e um selecionado pela função auto.arima;
 
 ```{r}
+
+modelo_auto <- auto.arima(log(jj),
+                          seasonal = F)
+
+modelo_auto
+
+# Modelos candidatos manuais
+
+modelo_arma11 <- Arima(log(jj), order=c(1,1,1))
+modelo_arma10 <- Arima(log(jj), order=c(1,1,0))
+modelo_arma01 <- Arima(log(jj), order=c(0,1,1))
+
+modelo_arma11
+modelo_arma10
+modelo_arma01
+
 
 ```
 
@@ -194,7 +256,15 @@ Estime e compare os modelos usando um critério de informação;
 
 ```{r}
 
+AIC(modelo_auto,
+    modelo_arma11,
+    modelo_arma10,
+    modelo_arma01)
+
 ```
+O modelo selecionado pela função auto.arima apresentou o menor valor de AIC (-103.31), indicando ajuste substancialmente superior aos modelos ARMA(1,1), ARMA(1,0) e ARMA(0,1).
+
+A grande diferença nos valores de AIC sugere evidência forte em favor do modelo automático, que captura melhor a estrutura temporal da série.
 
 ## 2.7
 
@@ -202,7 +272,14 @@ Faça o diagnóstico dos resíduos do modelo selecionado;
 
 ```{r}
 
+checkresiduals(modelo_auto)
+
 ```
+Análises realizadas:
+
+Resíduos semelhantes a ruído branco;
+Ausência de autocorrelação;
+Teste de Ljung-Box não significativo.
 
 ## 2.8
 
@@ -210,12 +287,22 @@ Gere previsões para alguns períodos à frente;
 
 ```{r}
 
+previsao <- forecast(modelo_auto, h=8)
+
+plot(previsao,
+     main = "Previsão do lucro por ação - Johnson & Johnson")
+
 ```
 
 ## 2.9
 
 Comente se o modelo ARMA parece adequado ou se há indícios de estrutura remanescente que poderá ser tratada melhor com modelos mais gerais.
 
-```{r}
+O modelo ARIMA selecionado parece adequado, pois:
 
-```
+- A série transformada apresentou estacionariedade;
+- Os critérios de informação favoreceram o modelo escolhido;
+- Os resíduos comportam-se como ruído branco;
+- Não foram observadas autocorrelações remanescentes relevantes.
+
+Assim, dentro da metodologia de Box e Jenkins, o modelo ARIMA ajustado fornece uma representação satisfatória da dinâmica temporal da série. Entretanto, caso padrões sazonais ou heterocedasticidade fossem detectados, modelos mais gerais, como SARIMA ou GARCH, poderiam ser considerados em análises futuras.
