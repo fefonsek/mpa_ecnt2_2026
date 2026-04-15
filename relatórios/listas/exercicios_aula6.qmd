@@ -1,0 +1,356 @@
+---
+title: "Resolução da Lista de Exercícios 1"
+subtitle: "Econometria II"
+author: "Felipe Fonseca"
+lang: pt-BR
+date: today
+format:
+  html:
+    theme: flatly
+    embed-resources: true
+    toc: true
+execute: 
+  echo: true
+  warning: false
+  message: false
+---
+
+# Objetivo 
+
+Aplicar o ciclo completo da metodologia de Box & Jenkins a um modelo SARIMA, 
+com ênfase na avaliação da acurácia preditiva fora da amostra.
+
+Este exercício integra conceitos das Aulas 3 e 4, usando o ecossistema 
+da Aula 4: pacotes 'fable', 'fabletools', 'feasts' e 'tsibble', 
+carregados via 'library(fpp3)'. 
+
+# Série utilizada 
+
+A série 'Gas' do conjunto de dados 'aus_production', disponível no pacote 
+'fpp3', registra a produção trimestral de gás na Austrália, em petajoules, 
+de 1956 a 2010. A série apresenta: 
+- Tendência crescente acentuada; 
+- Forte sazonalidade anual (m = 4);
+- Variabilidade que cresce com o nível da série.
+
+
+```{r}
+
+library(fpp3)
+library(ggplot2)
+library(forecast)
+
+
+```
+
+
+# Itens 1-5 
+
+## 1 - Análise explortória
+
+Análise exploratória Visualize a série original e avalie se uma transformação logarítmica é recomendável.
+
+```{r}
+
+# Carregar base aus_production
+data("aus_production")
+
+
+# Selecionar apenas a série Gas
+gas <- aus_production |>
+  select(Quarter, Gas)
+gas
+
+
+# Série original
+gas |>
+  autoplot(Gas) +
+  labs(
+    title = "Produção trimestral de gás na Austrália",
+    x = "Tempo",
+    y = "Petajoules"
+  )
+
+
+# Decomposição STL
+gas |>
+  model(STL(Gas)) |>
+  components() |>
+  autoplot()
+
+
+# Série em log
+gas |>
+  mutate(log_Gas = log(Gas)) |> 
+  autoplot(log_Gas) +
+  labs(
+    title = "Produção de gás (escala logarítmica)",
+    x = "Tempo",
+    y = "log(Gas)"
+  )
+
+```
+
+A série apresenta tendência crescente acentuada ao longo do tempo e
+forte sazonalidade anual típica de dados trimestrais (m = 4).
+
+Observa-se também aumento da variabilidade conforme o nível da série cresce,
+indicando possível heterocedasticidade multiplicativa.
+
+A visualização da série em escala logarítmica mostra estabilização da variância,
+tornando a transformação log(Gas) recomendável para a modelagem SARIMA,
+conforme a metodologia Box & Jenkins.
+
+## 2 - Diferenciação
+
+Aplique difetença sazonal (m = 4). Se necessário, aplique também uma diferença 
+simples. Visualize com 'gg_tsdisplay()'.
+
+```{r}
+
+## Transformação log
+gas_log <- gas |>
+  mutate(log_Gas = log(Gas))
+
+# Diferença sazonal (m = 4)
+gas_diff_seasonal <- gas_log |>
+  mutate(diff_sazonal = difference(log_Gas, lag = 4))
+
+# Visualização
+gas_diff_seasonal |>
+  gg_tsdisplay(diff_sazonal,
+               plot_type = "partial") +
+  labs(
+    title = "Série com diferença sazonal (lag = 4)"
+  )
+
+# Diferença simples adicional
+gas_diff_final <- gas_log |>
+  mutate(
+    diff_final = difference(
+      difference(log_Gas, lag = 4),
+      lag = 1
+    )
+  )
+
+# Visualização final
+gas_diff_final |>
+  gg_tsdisplay(diff_final,
+               plot_type = "partial") +
+  labs(
+    title = "Série com diferença sazonal + diferença simples"
+  )
+
+```
+Inicialmente foi aplicada uma transformação logarítmica para estabilizar
+a variância da série. Em seguida, aplicou-se uma diferença sazonal
+com período m = 4, eliminando o padrão sazonal anual.
+
+Observou-se ainda persistência de tendência, sendo então aplicada
+uma diferença simples adicional. Após as transformações, a série
+resultante apresenta comportamento aproximadamente estacionário,
+adequado para identificação do modelo SARIMA.
+
+## 3 - Identificação
+
+Com base na FAC e FACP, proponha pelo menos dois modelos SARIMA candidatos.
+
+```{r}
+
+# Modelos SARIMA candidatos
+fit <- gas |>
+  model(
+    
+    # 1) Modelo sugerido pela FAC (MA dominante)
+    sarima_fac =
+      ARIMA(log(Gas) ~ pdq(0,1,1) + PDQ(0,1,1)),
+    
+    # 2) Modelo alternativo sugerido pela FACP (AR dominante)
+    sarima_facp =
+      ARIMA(log(Gas) ~ pdq(1,1,0) + PDQ(0,1,1)),
+    
+    # 3) Modelo automático (busca completa)
+    auto =
+      ARIMA(log(Gas),
+            stepwise = FALSE,
+            approx = FALSE)
+  )
+
+
+# Série para identificação
+gas_ident <- gas |>
+  mutate(
+    log_Gas = log(Gas),
+    diff_final = difference(
+      difference(log_Gas, lag = 4),
+      lag = 1
+    )
+  )
+
+# FAC e FACP
+gas_ident |>
+  gg_tsdisplay(diff_final) +
+  labs(
+    title = "FAC e FACP da série diferenciada"
+  )
+
+```
+
+Com base na análise da FAC e da FACP da série diferenciada,
+foram propostos dois modelos SARIMA candidatos.
+
+O primeiro modelo foi sugerido principalmente pela FAC,
+indicando presença de componente MA não sazonal,
+resultando no modelo SARIMA(0,1,1)(0,1,1)[4].
+
+Como alternativa, a FACP sugeriu a inclusão de componente
+autoregressivo, sendo considerado o modelo
+SARIMA(1,1,0)(0,1,1)[4].
+
+Adicionalmente, estimou-se um modelo selecionado
+automaticamente pela função ARIMA do pacote fable,
+utilizando busca exaustiva e máxima verossimilhança
+exata para comparação entre especificações.
+
+## 4 - Estimação e seleção
+
+Estime os modelos candidatos e um modelo automático.
+Compare cia AICs.
+
+```{r}
+
+# Mostrar especificações dos modelos
+fit |>
+  pivot_longer(
+    everything(),
+    names_to = "Modelo",
+    values_to = "Especificacao"
+  )
+
+
+# Comparar qualidade dos modelos
+comparacao <- glance(fit) |>
+  arrange(AICc) |>
+  select(.model, AICc, AIC, BIC)
+comparacao
+
+comparacao |> 
+  slice_min(AICc)
+
+```
+Os modelos SARIMA candidatos foram estimados e comparados
+por meio dos critérios de informação AIC, AICc e BIC.
+
+O modelo com menor AICc foi selecionado como o mais
+adequado entre as especificações consideradas, pois
+apresenta melhor equilíbrio entre qualidade de ajuste
+e parcimônia.
+
+O modelo automático foi utilizado como referência,
+permitindo avaliar se a identificação manual baseada
+na análise da FAC e da FACP conduz a resultados
+consistentes com a seleção estatística.
+
+O modelo selecionado automaticamente foi o
+SARIMA(0,1,3)(2,1,1)[4].
+
+Esse resultado indica que, após a aplicação de
+diferenciação simples e sazonal, a dinâmica da série
+é explicada principalmente por componentes de média
+móvel não sazonais e por dependência autoregressiva
+sazonal significativa.
+
+A presença de termos AR sazonais de ordem 2 sugere
+persistência anual relevante na produção de gás,
+enquanto o componente MA(3) capta ajustes de curto
+prazo associados a choques recentes na série.
+
+Comparativamente, o modelo automático apresentou melhor
+desempenho segundo os critérios de informação, indicando
+ganho de ajuste em relação aos modelos candidatos mais
+parcimoniosos inicialmente propostos.
+
+
+## 5 - Diagnóstico
+
+Verifique se os resíduos do modelo selecionado são compatíveis
+com ruído branco.
+
+
+```{r}
+
+# Converter para objeto ts
+serie_gas <- ts(
+  log(aus_production$Gas),
+  frequency = 4,
+  start = c(1956, 1)
+)
+
+# Modelo selecionado
+modelo_final <- Arima(
+  serie_gas,
+  order = c(0,1,3),
+  seasonal = list(order = c(2,1,1), period = 4)
+)
+
+# Diagnóstico dos resíduos
+checkresiduals(modelo_final)
+
+```
+
+O diagnóstico dos resíduos foi realizado por meio da análise gráfica e do 
+teste de Ljung-Box.
+
+O teste de Ljung-Box apresentou valor-p igual a 0.3324. Como o valor-p é 
+superior ao nível de significância de 5%, não se rejeita a hipótese nula de 
+ausência de autocorrelação serial.
+
+Dessa forma, os resíduos podem ser considerados compatíveis com ruído branco, 
+indicando que o modelo SARIMA(0,1,3)(2,1,1)[4] captura adequadamente a 
+estrutura temporal da série.
+
+Conclui-se, portanto, que o modelo selecionado é estatisticamente adequado 
+para fins de modelagem e previsão.
+
+
+# Item 6 - Avaliação da acurácia preditiva
+
+- Divida a série em reino (até 2004) e teste (2005 em diante)
+
+```{r}
+
+
+```
+
+- Estime o modelo selecionado e um SNAIVE (benchmark sazonal) usando 
+apenas os dados de treino.
+
+```{r}
+
+
+```
+
+- Gere previsões para o horizonte do conjunto de teste.
+
+```{r}
+
+
+```
+
+- Calcule MAE, RMSE, MAPE e MASE para cada modelo.
+
+```{r}
+
+
+```
+
+- Interprete: compare os valores de MASE entre os dois modelos.
+O modelo com menor MASE tem melhor acurácia. O SARIMA supera o SNAIVE?
+
+```{r}
+
+
+```
+
+
+
