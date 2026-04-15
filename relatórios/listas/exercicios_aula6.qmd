@@ -319,6 +319,15 @@ para fins de modelagem e previsão.
 
 ```{r}
 
+# Divisão treino e teste
+gas_train <- gas |>
+  filter(year(Quarter) <= 2004)
+
+gas_test <- gas |>
+  filter(year(Quarter) >= 2005)
+
+gas_train
+gas_test
 
 ```
 
@@ -327,6 +336,20 @@ apenas os dados de treino.
 
 ```{r}
 
+# Ajuste dos modelos no treino
+fit_train <- gas_train |>
+  model(
+    
+    # Modelo SARIMA selecionado
+    SARIMA =
+      ARIMA(log(Gas) ~ pdq(0,1,3) + PDQ(2,1,1)),
+    
+    # Benchmark sazonal
+    SNAIVE =
+      SNAIVE(log(Gas))
+  )
+
+fit_train
 
 ```
 
@@ -334,6 +357,16 @@ apenas os dados de treino.
 
 ```{r}
 
+# Previsões fora da amostra
+fc <- fit_train |>
+  forecast(new_data = gas_test)
+fc
+
+autoplot(fc, gas_test) +
+  labs(
+    title = "Previsões fora da amostra",
+    y = "log(Gas)"
+  )
 
 ```
 
@@ -341,16 +374,36 @@ apenas os dados de treino.
 
 ```{r}
 
+# Acurácia preditiva
+accuracy_result <- fc |>
+  accuracy(gas)
+
+accuracy_result |>
+  select(.model, MAE, RMSE, MAPE, MASE)
 
 ```
 
 - Interprete: compare os valores de MASE entre os dois modelos.
 O modelo com menor MASE tem melhor acurácia. O SARIMA supera o SNAIVE?
 
-```{r}
+A avaliação da acurácia preditiva foi realizada por meio da divisão da 
+amostra em conjunto de treino (até 2004) e conjunto de teste (2005 em diante). 
+Foram comparados o modelo SARIMA selecionado e o modelo benchmark sazonal 
+SNAIVE.
 
+As métricas MAE, RMSE, MAPE e MASE indicaram desempenho superior do modelo 
+SNAIVE em relação ao SARIMA. Em particular, o valor de MASE do modelo SARIMA 
+(3,17) foi maior que o do SNAIVE (1,85), indicando menor acurácia preditiva 
+fora da amostra.
 
-```
+Embora o modelo SARIMA tenha apresentado bom ajuste dentro da amostra e 
+resíduos compatíveis com ruído branco, ele não superou o benchmark sazonal, 
+sugerindo possível sobreajuste aos dados históricos.
+
+Esse resultado evidencia um ponto central da metodologia Box & Jenkins: modelos
+mais complexos não garantem melhores previsões. Para séries com forte padrão 
+sazonal estável, modelos ingênuos sazonais podem apresentar desempenho 
+competitivo ou superior em previsão.
 
 
 
