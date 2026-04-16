@@ -21,12 +21,33 @@ Nesta aula, aplicamos o teste ADF às séries de preços e retornos de casas
 no Reino Unido usando selectlags = "BIC". Agora, refaça a análise usando 
 selectlags = "AIC" e responda:
 
+```{r}
+
+# pacotes necessários
+library(readxl)
+library(here)
+library(dplyr)
+library(urca)
+
+# importar a planilha com a série mensal de preços
+dados_ukhp <- read_xls(
+  here("dados/brutos/UKHP.xls"),
+  skip = 1,
+  col_types = c("date", "numeric"),
+  col_names = c("mes", "precos_casas")
+)
+
+```
+
+
 ## A
 
 Execute o teste ADF para ambas as séries (preços e retornos) com lags = 12
 e selectlags = "AIC". Quantas defasagens o AIC selecionou em cada caso?
 
 ```{r}
+
+
 
 ```
 
