@@ -1,5 +1,5 @@
 ---
-title: "Resolução da Lista de Exercícios 1"
+title: "Exercícios da Aula 6"
 subtitle: "Econometria II"
 author: "Felipe Fonseca"
 lang: pt-BR

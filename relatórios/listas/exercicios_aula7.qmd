@@ -1,0 +1,63 @@
+---
+title: "Exercícios da Aula 7"
+subtitle: "Econometria II"
+author: "Felipe Fonseca"
+lang: pt-BR
+date: today
+format:
+  html:
+    theme: flatly
+    embed-resources: true
+    toc: true
+execute: 
+  echo: true
+  warning: false
+  message: false
+---
+
+# AIC vs. BIC na seleção de defasagens do teste ADF
+
+Nesta aula, aplicamos o teste ADF às séries de preços e retornos de casas 
+no Reino Unido usando selectlags = "BIC". Agora, refaça a análise usando 
+selectlags = "AIC" e responda:
+
+## A
+
+Execute o teste ADF para ambas as séries (preços e retornos) com lags = 12
+e selectlags = "AIC". Quantas defasagens o AIC selecionou em cada caso?
+
+```{r}
+
+```
+
+## B
+
+Compare as estatísticas de teste e as conclusões obtidas com o AIC com
+aquelas obtifas com o BIC (apresentadas em aula). houve mudança na conclusão
+de algum dos testes? Se sim, em qual série e em que direção?
+
+```{r}
+
+```
+
+## C
+
+Os testes Philips-Perron e KPSS não dependem da escolha de defasagens da
+mesma forma que o ADF. Seus resultados mudam? Use-os como referência para
+avaliar qual critério (AIC ou BIC) produziu resultados mais consistentes
+no teste ADF.
+
+```{r}
+
+```
+
+## D
+
+Com base nos resultados, elabore uma explicação sobre por que o critério
+de seleção de defasagens pode afetar o poder do teste ADF. Relacione sua
+resposta ao número de parâmetros estimados na regressão de teste.
+
+```{r}
+
+```
+
