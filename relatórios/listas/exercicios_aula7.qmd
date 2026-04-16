@@ -47,9 +47,41 @@ e selectlags = "AIC". Quantas defasagens o AIC selecionou em cada caso?
 
 ```{r}
 
+# construir série de retornos
+dados_ukhp <- dados_ukhp |> 
+  mutate(
+    ret_casas = c(
+      NA,
+      100 * diff(precos_casas) /
+        precos_casas[-length(precos_casas)]
+    )
+  ) |> 
+  na.omit()
 
+# teste ADF com AIC
+# ADF com AIC para preços das casas
+adf_precos_aic <- ur.df(
+  dados_ukhp$precos_casas,
+  type = "trend",
+  lags = 12,
+  selectlags = "AIC"
+)
+
+summary(adf_precos_aic)
+
+# ADF com AIC para retornos das casas
+adf_retornos_aic <- ur.df(
+  dados_ukhp$ret_casas,
+  type = "drift",
+  lags = 12,
+  selectlags = "AIC"
+)
+
+summary(adf_retornos_aic)
 
 ```
+
+O critério AIC selecionou 12 defasagens para a série de preços e 11 defasagens para a série de retornos.
 
 ## B
 
@@ -59,7 +91,31 @@ de algum dos testes? Se sim, em qual série e em que direção?
 
 ```{r}
 
+# teste ADF com BIC
+# ADF com BIC para preços das casas
+adf_precos_bic <- ur.df(
+  dados_ukhp$precos_casas,
+  type = "trend",
+  lags = 12,
+  selectlags = "BIC"
+)
+
+summary(adf_precos_bic)
+
+# ADF com BIC  para retornos das casas
+adf_retornos_bic <- ur.df(
+  dados_ukhp$ret_casas,
+  type = "drift",
+  lags = 12,
+  selectlags = "BIC"
+)
+
+summary(adf_retornos_bic)
+
 ```
+Avaliar a resposta, pois a estatística divergiu em suficiente a depender
+do critério adotado para a série de retornos.
+
 
 ## C
 
