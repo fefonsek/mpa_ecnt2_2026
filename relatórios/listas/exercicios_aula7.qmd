@@ -81,7 +81,8 @@ summary(adf_retornos_aic)
 
 ```
 
-O critério AIC selecionou 12 defasagens para a série de preços e 11 defasagens para a série de retornos.
+O critério AIC selecionou 12 defasagens para a série de preços e 11 
+defasagens para a série de retornos.
 
 ## B
 
@@ -126,6 +127,8 @@ no teste ADF.
 
 ```{r}
 
+
+
 ```
 
 ## D
@@ -135,6 +138,8 @@ de seleção de defasagens pode afetar o poder do teste ADF. Relacione sua
 resposta ao número de parâmetros estimados na regressão de teste.
 
 ```{r}
+
+
 
 ```
 
