@@ -114,6 +114,8 @@ adf_retornos_bic <- ur.df(
 summary(adf_retornos_bic)
 
 ```
+
+
 Avaliar a resposta, pois a estatística divergiu em suficiente a depender
 do critério adotado para a série de retornos.
 
