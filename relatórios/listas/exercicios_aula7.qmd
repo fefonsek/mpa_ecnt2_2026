@@ -42,7 +42,7 @@ dados_ukhp <- read_xls(
 
 ## A
 
-Execute o teste ADF para ambas as séries (preços e retornos) com lags = 12
+- Execute o teste ADF para ambas as séries (preços e retornos) com lags = 12
 e selectlags = "AIC". Quantas defasagens o AIC selecionou em cada caso?
 
 ```{r}
@@ -86,7 +86,7 @@ defasagens para a série de retornos.
 
 ## B
 
-Compare as estatísticas de teste e as conclusões obtidas com o AIC com
+- Compare as estatísticas de teste e as conclusões obtidas com o AIC com
 aquelas obtifas com o BIC (apresentadas em aula). houve mudança na conclusão
 de algum dos testes? Se sim, em qual série e em que direção?
 
@@ -115,33 +115,217 @@ summary(adf_retornos_bic)
 
 ```
 
+A estatística do teste ADF apresentou diferenças relevantes a depender do 
+critério de seleção de defasagens adotado, especialmente para a série de 
+retornos.
 
-Avaliar a resposta, pois a estatística divergiu em suficiente a depender
-do critério adotado para a série de retornos.
+Quando o critério AIC foi utilizado, o procedimento selecionou um número maior 
+de defasagens, resultando em uma estatística de teste mais negativa (τ ≈ −2,64).
+Nesse caso, o valor da estatística ultrapassa o valor crítico a 5%, permitindo
+rejeitar a hipótese nula de raiz unitária, indicando estacionariedade da série 
+de retornos.
+
+Por outro lado, utilizando o critério BIC, que tende a selecionar modelos mais 
+parcimoniosos, o número de defasagens escolhidas foi menor. A estatística do 
+teste tornou-se menos negativa (τ ≈ −1,78), não ultrapassando os valores 
+críticos convencionais. Assim, não foi possível rejeitar a hipótese nula, 
+sugerindo presença de raiz unitária.
+
+Dessa forma, observa-se que a conclusão sobre a estacionariedade da série de 
+retornos não é robusta à escolha do critério de informação. O AIC aponta 
+evidência de estacionariedade, enquanto o BIC indica não estacionariedade.
+
+Essa divergência ocorre porque o AIC penaliza menos a inclusão de parâmetros 
+adicionais, capturando melhor possíveis dinâmicas de curto prazo, ao passo que
+o BIC impõe penalização mais severa à complexidade do modelo, podendo reduzir 
+o poder do teste em amostras finitas.
+
+Portanto, a estatística do teste divergiu de forma suficiente a depender do 
+critério adotado, evidenciando a sensibilidade do teste ADF à escolha do número
+de defasagens.
 
 
 ## C
 
-Os testes Philips-Perron e KPSS não dependem da escolha de defasagens da
+- Os testes Philips-Perron e KPSS não dependem da escolha de defasagens da
 mesma forma que o ADF. Seus resultados mudam? Use-os como referência para
 avaliar qual critério (AIC ou BIC) produziu resultados mais consistentes
 no teste ADF.
 
 ```{r}
 
+pp_precos <- ur.pp(
+  dados_ukhp$precos_casas,
+  type = "Z-tau",
+  model = "trend"
+)
+
+summary(pp_precos)
+
+kpss_precos <- ur.kpss(
+  dados_ukhp$precos_casas,
+  type = "tau"
+)
+
+summary(kpss_precos)
+
+pp_retornos <- ur.pp(
+  dados_ukhp$ret_casas,
+  type = "Z-tau",
+  model = "constant"
+)
+
+summary(pp_retornos)
+
+kpss_retornos <- ur.kpss(
+  dados_ukhp$ret_casas,
+  type = "mu"
+)
+
+summary(kpss_retornos)
+
+
 
 
 ```
+
+Os testes Phillips-Perron (PP) e KPSS foram aplicados às séries de preços e 
+retornos com o objetivo de avaliar a robustez das conclusões obtidas no teste 
+ADF sob diferentes critérios de seleção de defasagens.
+
+Para a série de preços das casas, o teste Phillips-Perron apresentou estatística 
+Z-τ=−1.6192, valor superior (em módulo inferior) aos valores críticos. Assim, 
+não se rejeita a hipótese nula de raiz unitária, indicando não estacionariedade
+da série.
+
+O teste KPSS, cuja hipótese nula é de estacionariedade, apresentou estatística 
+igual a 0.5393, superior a todos os valores críticos usuais. Dessa forma,
+rejeita-se a hipótese nula de estacionariedade, reforçando a evidência de que 
+a série de preços é não estacionária.
+
+Portanto, ambos os testes são consistentes ao indicar que a série de preços 
+possui raiz unitária.
+
+Para a série de retornos, o teste Phillips-Perron apresentou estatística 
+Z-τ=−13.1202, muito inferior aos valores críticos, levando à rejeição da 
+hipótese nula de raiz unitária, o que indica estacionariedade.
+
+Já o teste KPSS apresentou estatística igual a 0.3802, inferior ao valor 
+crítico de 5%, de modo que não se rejeita a hipótese nula de estacionariedade. 
+Assim, o teste KPSS também aponta que a série de retornos é estacionária.
+
+Comparando esses resultados com o teste ADF, observa-se que os testes PP e 
+KPSS confirmam:
+
+não estacionariedade da série de preços;
+estacionariedade da série de retornos.
+
+Como os testes PP e KPSS não dependem da escolha explícita do número de 
+defasagens, eles funcionam como referência robusta. Nesse sentido, verifica-se 
+que o critério AIC produziu resultados mais consistentes com os testes 
+alternativos, especialmente para a série de retornos, na qual houve divergência 
+parcial quando utilizado o critério BIC.
+
+Conclui-se, portanto, que o AIC apresentou melhor desempenho na identificação 
+da dinâmica estocástica das séries analisadas.
 
 ## D
 
-Com base nos resultados, elabore uma explicação sobre por que o critério
+- Com base nos resultados, elabore uma explicação sobre por que o critério
 de seleção de defasagens pode afetar o poder do teste ADF. Relacione sua
 resposta ao número de parâmetros estimados na regressão de teste.
 
+
+O teste Augmented Dickey-Fuller (ADF) depende diretamente da escolha do número 
+de defasagens incluídas na regressão auxiliar. Essas defasagens são 
+introduzidas para eliminar autocorrelação serial nos resíduos, garantindo 
+validade estatística do teste.
+
+A regressão estimada pelo ADF pode ser representada como:
+
+Δyt​=α+βt+γyt−1​+i=1∑p​δi​Δyt−i​+εt​
+
+onde p corresponde ao número de defasagens selecionadas.
+
+O critério de informação utilizado (AIC ou BIC) determina exatamente esse valor 
+de p, afetando diretamente o número de parâmetros estimados na regressão.
+
+### Trade-off fundamental
+
+A escolha das defasagens envolve um equilíbrio entre dois problemas 
+econométricos:
+
+#### Poucas defasagens (subparametrização)
+
+- Pode permanecer autocorrelação nos resíduos;
+- Viola os pressupostos do teste;
+- A variância do estimador fica incorreta;
+- O teste tende a apresentar viés para não rejeitar a raiz unitária, reduzindo 
+o poder do teste.
+
+#### Muitas defasagens (superparametrização)
+
+- Aumenta o número de parâmetros estimados;
+- Reduz os graus de liberdade da regressão;
+- Aumenta o erro-padrão do coeficiente γ;
+- Diminui a estatística t do teste;
+- O teste perde poder estatístico.
+
+Assim, o número de defasagens influencia diretamente a capacidade do ADF de 
+detectar estacionariedade.
+
+### Relação com AIC e BIC
+
+Os critérios diferem justamente na penalização da complexidade do modelo:
+
+- AIC aplica penalização mais branda → tende a selecionar mais defasagens;
+- BIC penaliza mais fortemente → tende a selecionar modelos mais parcimoniosos.
+
+Consequentemente:
+
+- o AIC reduz o risco de autocorrelação residual, podendo aumentar o poder do 
+teste em amostras finitas;
+- o BIC pode escolher poucos lags, aumentando o risco de especificação 
+insuficiente.
+
+Neste exercício, a divergência observada na série de retornos ilustra 
+esse ponto: mudanças no número de parâmetros estimados alteraram a estatística 
+do teste ADF e, portanto, a conclusão sobre estacionariedade.
+
+
 ```{r}
 
+adf_lag2  <- ur.df(dados_ukhp$ret_casas, type = "drift", lags = 2)
+adf_lag12 <- ur.df(dados_ukhp$ret_casas, type = "drift", lags = 12)
+
+summary(adf_lag2)
+summary(adf_lag12)
 
 
 ```
+Ao comparar os resultados, observa-se que o aumento do número de defasagens 
+eleva o total de coeficientes estimados, alterando erros-padrão e estatísticas 
+t do teste.
 
+Nos resultados obtidos, observa-se claramente esse efeito. Com apenas
+2 defasagens, a estatística do teste foi −6.53, levando à rejeição da
+hipótese nula de raiz unitária e indicando estacionariedade da série.
+Quando o número de defasagens foi ampliado para 12, a estatística passou
+para −2.72, deixando de rejeitar a hipótese nula ao nível de 5%.
+
+Esse resultado evidencia o trade-off do teste ADF:
+
+- poucas defasagens podem gerar autocorrelação residual;
+- muitas defasagens aumentam a variância dos estimadores e reduzem o
+  poder estatístico do teste.
+
+Como o AIC tende a selecionar mais defasagens e o BIC modelos mais
+parsimoniosos, diferentes critérios podem levar a conclusões distintas
+sobre estacionariedade.
+
+### Conclusão
+
+Portanto, o critério de seleção de defasagens afeta o poder do teste ADF
+porque modifica diretamente a dimensionalidade da regressão de teste,
+alterando erros-padrão, estatísticas t e, consequentemente, a decisão
+inferencial sobre a presença de raiz unitária.
