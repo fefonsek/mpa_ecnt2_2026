@@ -1,0 +1,127 @@
+---
+title: "Exercícios da Aula 8"
+subtitle: "Econometria II"
+author: "Felipe Fonseca"
+lang: pt-BR
+date: today
+format:
+  html:
+    theme: flatly
+    embed-resources: true
+    toc: true
+execute: 
+  echo: true
+  warning: false
+  message: false
+---
+
+# CONSOLIDAÇÃO
+
+Considere as três ssituações abaixo. Em cada caso, responda concisamente:
+
+# Situação 1
+
+Duas séries crescem ao longo do tempo por causa de uma tendência determinística comum. Quando uma tendência temporal é incluída na regressão em nível, o coeficiente da variável explicativa perde significância.
+
+## 1
+
+A regressão em nível, após controlar a tendência quando necessário, faz sentido?
+
+Sim, **desde que a tendência temporal seja incluída**.  
+A aparente relação entre as variáveis ocorre apenas porque ambas seguem uma tendência determinística comum.
+
+## 2
+
+Há risco de regressão espúria?
+
+Sim, caso a tendência não seja controlada.  
+Sem a tendência, o modelo pode interpretar crescimento ao longo do tempo como relação econômica verdadeira.
+
+## 3
+
+O ECM é apropriado?
+
+Não.  
+O problema não envolve cointegração, mas sim tendência determinística.
+
+## 4
+
+Qual decisão econométrica é mais adequada?
+
+**Incluir tendência na regressão em nível.**
+
+
+# Situação 2
+
+Duas séries são não estacionárias em nível e a regressão entre elas apresenta alto R2. Porém, os resíduos dessa regressão apresentam raiz unitária.
+
+## 1
+
+A regressão em nível, após controlar a tendência quando necessário, faz sentido?
+
+Não.  
+Resíduos com raiz unitária indicam ausência de cointegração.
+
+## 2
+
+Há risco de regressão espúria?
+
+Sim.  
+Trata-se do caso clássico de regressão espúria: alto poder explicativo aparente sem relação econômica real.
+
+## 3
+
+O ECM é apropriado?
+
+Não.  
+Sem cointegração, o modelo de correção de erros não é válido.
+
+## 4
+
+Qual decisão econométrica é mais adequada?
+
+**Trabalhar em primeiras diferenças.**
+
+
+
+# Situação 3
+
+Duas séries são I(1). A regressão de longo prazo gera resíduos estacionários, e no ECM estimado o coeficiente do termo de correção de erros é negativo e estatisticamente significante.
+
+## 1
+
+A regressão em nível, após controlar a tendência quando necessário, faz sentido?
+
+Sim.  
+A estacionariedade dos resíduos indica existência de cointegração e equilíbrio de longo prazo.
+
+
+## 2
+
+Há risco de regressão espúria?
+
+Não.  
+A cointegração confirma uma relação econômica válida.
+
+## 3
+
+O ECM é apropriado?
+
+Sim.  
+O coeficiente negativo e significativo do termo de correção de erros indica ajuste ao equilíbrio de longo prazo.
+
+
+## 4
+
+Qual decisão econométrica é mais adequada?
+
+**Estimar relação de longo prazo e ECM.**
+
+# Resumo Final
+
+| Situação | Regressão em nível | Regressão espúria? | ECM apropriado? | Decisão |
+|---|---|---|---|---|
+| **1** | Sim (com tendência) | Sim se não controlar tendência | Não | Incluir tendência na regressão |
+| **2** | Não | Sim | Não | Trabalhar em primeiras diferenças |
+| **3** | Sim | Não | Sim | Estimar relação de longo prazo e ECM |
+
